@@ -1,170 +1,81 @@
-# webext-privacy-guard — Privacy Utilities
+# webext-privacy-guard
 
-[![npm version](https://img.shields.io/npm/v/webext-privacy-guard)](https://npmjs.com/package/webext-privacy-guard)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Chrome Web Extension](https://img.shields.io/badge/Chrome-Web%20Extension-orange.svg)](https://developer.chrome.com/docs/extensions/)
-[![CI Status](https://github.com/theluckystrike/webext-privacy-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/theluckystrike/webext-privacy-guard/actions)
-[![Discord](https://img.shields.io/badge/Discord-Zovo-blueviolet.svg?logo=discord)](https://discord.gg/zovo)
-[![Website](https://img.shields.io/badge/Website-zovo.one-blue)](https://zovo.one)
-[![GitHub Stars](https://img.shields.io/github/stars/theluckystrike/webext-privacy-guard?style=social)](https://github.com/theluckystrike/webext-privacy-guard)
+> Privacy utilities for Chrome extensions — PII stripping, data anonymization, GDPR export, and retention policies for MV3.
 
-> Strip PII (email/phone/SSN/card), sanitize URLs, anonymize data, GDPR export, and retention policies.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**webext-privacy-guard** provides comprehensive privacy utilities for Chrome extensions. Strip personally identifiable information, sanitize URLs, generate GDPR exports, and implement data retention policies — all with a privacy-first approach.
-
-Part of the [Zovo](https://zovo.one) developer tools family.
-
-## Features
-
-- ✅ **PII Stripping** - Remove emails, phones, SSNs, credit cards
-- ✅ **URL Sanitization** - Remove tracking parameters and sensitive data
-- ✅ **Data Anonymization** - Hash and anonymize user data
-- ✅ **GDPR Export** - Generate data export requests
-- ✅ **Retention Policies** - Implement data expiration
-- ✅ **TypeScript Support** - Full type definitions included
-
-## Installation
+## Install
 
 ```bash
 npm install webext-privacy-guard
 ```
 
-## Quick Start
+## Usage
 
-```typescript
+```js
 import { PrivacyGuard } from 'webext-privacy-guard';
 
-// Strip PII from text
-const clean = PrivacyGuard.stripPII('Contact john@example.com at 555-123-4567');
+// Strip PII from user-submitted text
+const clean = PrivacyGuard.stripPII('Contact me at jane@example.com or 555-123-4567');
+// => 'Contact me at [EMAIL] or [PHONE]'
 
-// Sanitize URLs
-const safe = PrivacyGuard.sanitizeURL('https://api.com?email=user@test.com&token=abc');
+// Check if text contains sensitive data
+const result = PrivacyGuard.containsPII('SSN: 123-45-6789');
+// => { hasEmail: false, hasPhone: false, hasSSN: true, hasCard: false }
 
-// Generate GDPR export
-const export = await PrivacyGuard.generateExport();
-```
+// Sanitize URLs by redacting sensitive query params
+const safeUrl = PrivacyGuard.sanitizeURL('https://example.com?email=jane@test.com&token=abc123');
+// => 'https://example.com/?email=%5BREDACTED%5D&token=%5BREDACTED%5D'
 
-## Usage Examples
+// Anonymize specific fields in an object
+const user = { name: 'Jane Doe', email: 'jane@test.com', role: 'admin' };
+const anon = PrivacyGuard.anonymize(user, ['name', 'email']);
+// => { name: 'anon_...', email: 'anon_...', role: 'admin' }
 
-### Strip PII
+// Generate a GDPR-compliant data export
+const exportJson = await PrivacyGuard.generateExport(['userData', 'settings']);
 
-```typescript
-// Strip all PII types
-const clean = PrivacyGuard.stripPII(
-  'Contact john@example.com at 555-123-4567 or 987-654-3210'
-);
-// Output: 'Contact [EMAIL] at [PHONE] or [PHONE]'
+// Delete all user data (right to erasure)
+await PrivacyGuard.deleteAllData();
 
-// Strip specific types only
-const emailsOnly = PrivacyGuard.stripPII(text, { emails: true, phones: false });
-```
-
-### URL Sanitization
-
-```typescript
-// Remove tracking parameters
-const safe = PrivacyGuard.sanitizeURL(
-  'https://example.com/page?utm_source=google&email=user@test.com'
-);
-// Output: 'https://example.com/page?utm_source=google'
-
-// Custom parameters to remove
-const custom = PrivacyGuard.sanitizeURL(url, {
-  params: ['ref', 'source', 'fbclid']
-});
-```
-
-### Data Anonymization
-
-```typescript
-// Hash sensitive data
-const hashed = PrivacyGuard.hash('user-id-123');
-
-// Anonymize user object
-const anon = PrivacyGuard.anonymize({
-  id: 'user-123',
-  name: 'John Doe',
-  email: 'john@example.com'
-});
-// Output: { id: 'user-123', name: '[NAME]', email: '[EMAIL]' }
-```
-
-### GDPR Export
-
-```typescript
-// Generate data export
-const export = await PrivacyGuard.generateExport({
-  includeStorage: true,
-  includeHistory: false,
-});
-
-// Returns a downloadable JSON file with all user data
-```
-
-### Retention Policies
-
-```typescript
-// Set expiration for data
-await PrivacyGuard.setExpiration('temp-data', {
-  duration: 24 * 60 * 60 * 1000, // 24 hours
-  onExpire: 'delete' // or 'notify'
-});
-
-// Clean expired data
-await PrivacyGuard.cleanExpired();
+// Apply data retention — remove entries older than 30 days
+const removed = await PrivacyGuard.applyRetention('activityLog', 30);
 ```
 
 ## API
 
-### PrivacyGuard Methods
+### `PrivacyGuard`
 
-| Method | Description |
-|--------|-------------|
-| `PrivacyGuard.stripPII(text, options?)` | Remove PII from text |
-| `PrivacyGuard.sanitizeURL(url, options?)` | Remove tracking from URLs |
-| `PrivacyGuard.hash(data)` | Hash sensitive data |
-| `PrivacyGuard.anonymize(data)` | Anonymize user data |
-| `PrivacyGuard.generateExport(options?)` | Generate GDPR export |
-| `PrivacyGuard.setExpiration(key, policy)` | Set data expiration |
-| `PrivacyGuard.cleanExpired()` | Clean expired data |
+All methods are static.
 
-## Contributing
+#### `PrivacyGuard.stripPII(text: string): string`
 
-Contributions are welcome! Please follow these steps:
+Strips PII (emails, phone numbers, SSNs, credit card numbers) from the given text, replacing each with a bracketed placeholder (`[EMAIL]`, `[PHONE]`, `[SSN]`, `[CARD]`).
 
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/privacy-feature`
-3. **Make** your changes
-4. **Test** your changes: `npm test`
-5. **Commit** your changes: `git commit -m 'Add new feature'`
-6. **Push** to the branch: `git push origin feature/privacy-feature`
-7. **Submit** a Pull Request
+#### `PrivacyGuard.sanitizeURL(url: string): string`
 
-## Built by Zovo
+Redacts sensitive query parameters (`email`, `token`, `key`, `password`, `secret`, `auth`, `session`, `ssn`, `phone`) from a URL, replacing their values with `[REDACTED]`.
 
-Part of the [Zovo](https://zovo.one) developer tools family — privacy-first Chrome extensions built by developers, for developers.
+#### `PrivacyGuard.anonymize<T extends Record<string, any>>(data: T, fields: string[]): T`
 
-## See Also
+Returns a shallow copy of `data` with the specified `fields` replaced by deterministic hash strings (prefixed with `anon_`).
 
-### Related Zovo Repositories
+#### `PrivacyGuard.generateExport(storageKeys?: string[]): Promise<string>`
 
-- [webext-url-parser](https://github.com/theluckystrike/webext-url-parser) - URL utilities
-- [chrome-storage-plus](https://github.com/theluckystrike/chrome-storage-plus) - Type-safe storage
-- [chrome-extension-starter-mv3](https://github.com/theluckystrike/chrome-extension-starter-mv3) - Extension template
+Reads data from `chrome.storage.local` (all keys or the specified subset) and returns a JSON string containing the exported data, a timestamp, and the extension ID. Useful for GDPR data portability requests.
 
-### Zovo Chrome Extensions
+#### `PrivacyGuard.deleteAllData(): Promise<void>`
 
-- [Zovo Tab Manager](https://chrome.google.com/webstore/detail/zovo-tab-manager) - Manage tabs efficiently
-- [Zovo Focus](https://chrome.google.com/webstore/detail/zovo-focus) - Block distractions
-- [Zovo Permissions Scanner](https://chrome.google.com/webstore/detail/zovo-permissions-scanner) - Check extension privacy grades
+Clears both `chrome.storage.local` and `chrome.storage.sync`, implementing the GDPR right to erasure.
 
-Visit [zovo.one](https://zovo.one) for more information.
+#### `PrivacyGuard.containsPII(text: string): { hasEmail: boolean; hasPhone: boolean; hasSSN: boolean; hasCard: boolean }`
+
+Checks whether the given text contains any detectable PII patterns and returns a breakdown by category.
+
+#### `PrivacyGuard.applyRetention(key: string, maxAgeDays: number): Promise<number>`
+
+Reads an array from `chrome.storage.local` at the given `key`, removes entries whose `timestamp` or `createdAt` field is older than `maxAgeDays`, writes the filtered array back, and returns the number of removed entries.
 
 ## License
 
-MIT — [Zovo](https://zovo.one)
-
----
-
-*Built by developers, for developers. No compromises on privacy.*
+MIT
