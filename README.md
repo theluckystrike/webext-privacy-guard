@@ -89,10 +89,19 @@ MIT
 
 ## See Also
 
+### Related Zovo Repositories
+
 - [chrome-storage-plus](https://github.com/theluckystrike/chrome-storage-plus) - Type-safe storage wrapper
 - [chrome-identity-helper](https://github.com/theluckystrike/chrome-identity-helper) - OAuth2 identity management
+- [chrome-data-encrypt](https://github.com/theluckystrike/chrome-data-encrypt) - AES-256 encryption
+- [chrome-extension-starter-mv3](https://github.com/theluckystrike/chrome-extension-starter-mv3) - Production-ready Chrome extension starter
 
-## Contributing
+### Zovo Chrome Extensions
+
+- [Zovo Tab Manager](https://chrome.google.com/webstore/detail/zovo-tab-manager) - Manage tabs efficiently
+- [Zovo Focus](https://chrome.google.com/webstore/detail/zovo-focus) - Block distractions
+
+Visit [zovo.one](https://zovo.one) for more information.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
