@@ -21,7 +21,11 @@ npm install webext-privacy-guard
 
 ```js
 import { PrivacyGuard } from 'webext-privacy-guard';
+```
 
+For more complete examples, see the [examples](./examples/) directory.
+
+```js
 // Strip PII from user-submitted text
 const clean = PrivacyGuard.stripPII('Contact me at jane@example.com or 555-123-4567');
 // => 'Contact me at [EMAIL] or [PHONE]'
